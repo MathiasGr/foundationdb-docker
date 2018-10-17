@@ -3,20 +3,23 @@ FROM ubuntu:18.04
 LABEL license="MIT License"
 LABEL maintainer="christoph.preissner@gmail.com"
 
+ARG FDB_VERSION="5.2.5"
+ARG FDB_DEB_REVISION="1"
+
+ARG FDB_PKG_URL="https://www.foundationdb.org/downloads/${FDB_VERSION}/ubuntu/installers"
+ARG FDB_CLIENTS_PKG="foundationdb-clients_${FDB_VERSION}-${FDB_DEB_REVISION}_amd64.deb"
+ARG FDB_SERVER_PKG="foundationdb-server_${FDB_VERSION}-${FDB_DEB_REVISION}_amd64.deb"
+
 RUN apt-get update && apt-get install -y \
-	wget \
 	dpkg \
 	python \
 	net-tools
 
-RUN wget https://www.foundationdb.org/downloads/5.2.5/ubuntu/installers/foundationdb-clients_5.2.5-1_amd64.deb \
-	&& wget https://www.foundationdb.org/downloads/5.2.5/ubuntu/installers/foundationdb-server_5.2.5-1_amd64.deb
+ADD ${FDB_PKG_URL}/${FDB_CLIENTS_PKG} /tmp/${FDB_CLIENTS_PKG}
+ADD ${FDB_PKG_URL}/${FDB_SERVER_PKG} /tmp/${FDB_SERVER_PKG}
 
-RUN dpkg -i \
-	foundationdb-clients_5.2.5-1_amd64.deb \
-	foundationdb-server_5.2.5-1_amd64.deb
-
-RUN apt-get --purge remove -y wget
+RUN dpkg -i /tmp/${FDB_CLIENTS_PKG} /tmp/${FDB_SERVER_PKG} && \
+	rm /tmp/${FDB_CLIENTS_PKG} /tmp/${FDB_SERVER_PKG}
 
 COPY start-foundationdb.sh /usr/bin/start-foundationdb.sh
 
